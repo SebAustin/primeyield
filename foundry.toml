@@ -1,0 +1,31 @@
+[profile.default]
+src = "contracts/src"
+test = "contracts/test"
+out = "contracts/out"
+libs = ["contracts/lib"]
+solc_version = "0.8.24"
+
+# Mantle's EVM does not support the PUSH0 opcode (Shanghai) or CREATE2 in the
+# usual way. Pin to the Paris hardfork so the compiler never emits PUSH0.
+# NOTE: VERIFY against current Mantle docs before mainnet — Mantle's supported
+# opcodes have changed over time. If PUSH0 is supported on your target network,
+# this can be relaxed to "shanghai".
+evm_version = "paris"
+
+optimizer = true
+optimizer_runs = 200
+
+remappings = [
+    "forge-std/=contracts/lib/forge-std/src/",
+    "@openzeppelin/contracts/=contracts/lib/openzeppelin-contracts/contracts/",
+]
+
+[fuzz]
+runs = 256
+
+[rpc_endpoints]
+mantle_sepolia = "${MANTLE_SEPOLIA_RPC}"
+mantle_mainnet = "${MANTLE_MAINNET_RPC}"
+
+[etherscan]
+mantle_sepolia = { key = "${MANTLESCAN_API_KEY}", url = "https://api-sepolia.mantlescan.xyz/api" }

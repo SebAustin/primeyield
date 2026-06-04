@@ -1,0 +1,37 @@
+# Secrets
+.env
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# uv
+uv.lock
+
+# Foundry build artifacts. NOTE: contracts/lib/* are git submodules committed
+# via .gitmodules (so `git clone --recursive` + `forge build` just works); only
+# build output and caches are ignored here.
+contracts/out/
+contracts/cache/
+/cache/
+broadcast/
+
+# Agent runtime state (addresses/identity are environment-specific).
+# NOTE: lives in repo-root state/ because agent/state.py is a module and an
+# agent/state/ directory would collide with it in Python's import system.
+state/*.json
+!state/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

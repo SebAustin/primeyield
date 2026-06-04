@@ -1,0 +1,12 @@
+{
+  "name": "PrimeYield",
+  "version": "0.1.0",
+  "description": "Autonomous RWA yield-rotation agent on Mantle. Rotates capital across mETH, USDY, and USDe using LangGraph orchestration, Monte Carlo risk gating, and human-in-the-loop Telegram approval — with every decision's rationale hash committed on-chain for verifiable provenance.",
+  "capabilities": [
+    "yield-rotation",
+    "rwa-risk-management",
+    "on-chain-provenance"
+  ],
+  "model": "claude-sonnet-4-5",
+  "owner": "$OWNER_ADDRESS"
+}

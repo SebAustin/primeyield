@@ -69,11 +69,38 @@ Chronological record of non-obvious engineering choices.
   positive micro-returns — the test suite is updated to reflect this; the
   relevant gate is `var95 > -3%`, not `var95 < 0`.
 
+## Day 4-5 — LangGraph node implementations + Telegram approval
+
+- **Approval bridge**: `agent/approval_store.py` manages asyncio.Events keyed
+  by `decision_id`. `request_approval` node awaits the event (4h timeout);
+  the FastAPI Telegram webhook resolves it via `approval_store.resolve()`.
+  No LangGraph `interrupt` or checkpointing needed — the node itself blocks.
+- **`simulate_plan` uses `eth_call`** for dry-run simulation rather than
+  spawning a new anvil subprocess. `eth_call` is the JSON-RPC dry-run
+  primitive; when `MANTLE_ACTIVE_RPC` points to an anvil fork this is
+  equivalent to "running against anvil" without the overhead of a subprocess.
+- **`execute` nonce management**: each tx increments the nonce from
+  `get_transaction_count`. In the fully serialized execute node this is safe;
+  if parallelism is ever added, a nonce pool will be needed.
+- **`post_to_reputation`** calls the ERC-8004 `giveFeedback()` function
+  directly (no EIP-712 wrapping needed — the signature is via tx sender).
+  Score 9977 / 2 decimals = 99.77 on success; 5000/2 on partial execution.
+- **DB layer** (`agent/db.py`): writes to Postgres when `DATABASE_URL` is
+  configured; falls back to `state/decisions.jsonl` JSONL file otherwise —
+  judge_replay.py reads whichever is available.
+- **Fallback paths in every node**: LLM failures in `forecast_yields` /
+  `propose_plan` fall back to last-known yields / no-op plan. No node raises
+  uncaught exceptions; failures are logged and routed to `rejected`.
+
 ### Open VERIFY items (resolve before the relevant day)
 
 - [ ] Chainlink MNT/USD (or USDY/USD) feed address on Mantle →
-      `agent/adapters/ondo.py: CHAINLINK_MNT_USD_MANTLE` (use before mainnet).
-- [ ] Agni & Merchant Moe subgraph URLs for pool APR data (Day 4-5).
+      `agent/adapters/ondo.py: CHAINLINK_MNT_USD_MANTLE` (before mainnet).
+- [ ] Agni & Merchant Moe subgraph URLs for pool APR data (pool APR is
+      currently a 0-stub — wire subgraphs Day 6-7 if time permits).
+- [ ] Set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, and call
+      `setWebhook` on the Telegram API pointing at the FastAPI server
+      before the live demo.
 - [ ] Live Sepolia registration/deploy needs a funded agent EOA + `PINATA_JWT`
       (only local-anvil dry-runs done so far).
 - [ ] `agent-card.json` model string (`claude-sonnet-4-5`) vs. the model

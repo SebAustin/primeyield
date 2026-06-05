@@ -43,11 +43,37 @@ Chronological record of non-obvious engineering choices.
 - **Foundry installed** (forge/anvil 1.7.1) via `foundryup`. forge-std v1.16.1
   + OpenZeppelin v5.1.0 in `contracts/lib/`. Remappings in `foundry.toml`.
 
+## Day 2-3 — Protocol adapters + risk engine
+
+- **No RWADynamicOracle on Mantle** (verified 2026-06-05 from mantlescan +
+  Ondo GitHub). The Mantle USDY deployment (`0x5bE26527…`) is a
+  transfer-restricted ERC-20 with a `blocklist()` pointer; pricing comes from
+  the Ondo REST API or a Chainlink MNT/USD feed (address still TBD — VERIFY).
+  `agent/adapters/ondo.py` falls back to $1.052 if both are unavailable.
+- **USDY preflight** reads `blocklist().isBlocked(recipient)` on-chain;
+  raises `USDYBlocklistError` on any failure (including inability to read
+  the blocklist itself — fail-safe design).
+- **Agni QuoterV2** — `quoteExactInputSingle` is nonpayable in the ABI but
+  behaves as a read; called via `eth_call` (web3.py default for `.call()`).
+  Struct parameter confirmed from verified source on mantlescan.xyz.
+- **Merchant Moe LBRouter.swapExactTokensForTokens** takes a `Path` struct
+  with `{pairBinSteps, versions (uint8[]), tokenPath}`. `versions` uses the
+  `ILBRouter.Version` enum (V2_2 = 3, but `findBestPathFromAmountIn` returns
+  the best version per pair — current adapter defaults to V2_2=3 for the
+  full path).
+- **Risk engine** uses NumPy for the 10k-path Monte Carlo (added to
+  dependencies). Cholesky decomposition with a small jitter (`1e-10` on the
+  diagonal) guards against near-singular covariance matrices from synthetic
+  test data.
+- **VaR95 can be positive** when all yield scenarios have consistently
+  positive micro-returns — the test suite is updated to reflect this; the
+  relevant gate is `var95 > -3%`, not `var95 < 0`.
+
 ### Open VERIFY items (resolve before the relevant day)
 
-- [ ] Ondo USDY `RWADynamicOracle` address on Mantle →
-      `agent/config.py: USDY_ORACLE_ADDRESS` (Day 2-3).
-- [ ] Agni & Merchant Moe ABIs (from mantlescan verified contracts) (Day 2-3).
+- [ ] Chainlink MNT/USD (or USDY/USD) feed address on Mantle →
+      `agent/adapters/ondo.py: CHAINLINK_MNT_USD_MANTLE` (use before mainnet).
+- [ ] Agni & Merchant Moe subgraph URLs for pool APR data (Day 4-5).
 - [ ] Live Sepolia registration/deploy needs a funded agent EOA + `PINATA_JWT`
       (only local-anvil dry-runs done so far).
 - [ ] `agent-card.json` model string (`claude-sonnet-4-5`) vs. the model

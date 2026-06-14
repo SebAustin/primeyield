@@ -39,13 +39,9 @@ prove exactly what the agent decided and that no one edited it afterward.
 
 ## How it works
 
-```
-snapshot_state → forecast_yields → score_risks ─┬─ (risk fail) ──────────────────────→ END
-                                                 └─→ propose_plan → simulate_plan ─┬─ (<5% TVL) ───────────→ execute
-                                                                                   └─ (≥5% TVL) → request_approval ─┬─ approve → execute
-                                                                                                                    └─ reject → END
-execute → log_decision → post_to_reputation → END
-```
+<div align="center">
+  <img src="docs/architecture.svg" alt="PrimeYield architecture: a LangGraph agent pipeline (snapshot → forecast → risk gates → propose → simulate → human approval → execute → log → reputation) that commits keccak256(rationale) to an on-chain DecisionLog before trading, with judge_replay verifying every decision from the chain." width="100%">
+</div>
 
 1. **Snapshot & forecast** — reads the portfolio; an LLM forecasts per-asset yield.
 2. **Risk gates** — 10k-path Monte Carlo VaR/ES, oracle-deviation, slippage cap, concentration limit.

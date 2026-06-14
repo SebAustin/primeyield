@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 880" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#8b93a7"/>
+    </marker>
+    <marker id="arrowTeal" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#65B3AE"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#6E56CF"/>
+    </marker>
+    <style>
+      .node{fill:#21252e;stroke:#39414f;stroke-width:1.5;rx:11;}
+      .llm{fill:#23202e;stroke:#6E56CF;stroke-width:1.5;}
+      .nlabel{fill:#eef1f6;font-size:19px;font-weight:600;}
+      .nsub{fill:#8b93a7;font-size:13px;}
+      .band{fill:none;stroke-width:1.5;rx:16;}
+      .blabel{font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+      .edge{stroke:#8b93a7;stroke-width:2;fill:none;}
+      .edgeTeal{stroke:#65B3AE;stroke-width:2.5;fill:none;}
+      .edgePurple{stroke:#6E56CF;stroke-width:2;fill:none;stroke-dasharray:5 4;}
+      .elabel{fill:#aab2c2;font-size:13px;}
+      .chip{fill:#1b1e26;stroke:#39414f;stroke-width:1.5;rx:10;}
+      .end{fill:#2a2030;stroke:#7a4b6b;stroke-width:1.5;}
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1300" height="880" fill="#16181d"/>
+  <rect x="0" y="0" width="1300" height="6" fill="#6E56CF"/>
+
+  <text x="40" y="48" fill="#f2f4f8" font-size="30" font-weight="800">PrimeYield — architecture</text>
+  <text x="40" y="74" fill="#8b93a7" font-size="15">Autonomous RWA yield-rotation agent on Mantle, with on-chain decision provenance</text>
+
+  <!-- ===================== OFF-CHAIN BAND ===================== -->
+  <rect class="band" x="30" y="96" width="1240" height="396" stroke="#39414f"/>
+  <text class="blabel" x="52" y="124" fill="#65B3AE">Off-chain agent · LangGraph + LangSmith</text>
+
+  <!-- Row 1 -->
+  <g>
+    <rect class="node" x="55" y="150" width="180" height="62" rx="11"/>
+    <text class="nlabel" x="145" y="178" text-anchor="middle">snapshot_state</text>
+    <text class="nsub" x="145" y="198" text-anchor="middle">portfolio + balances</text>
+
+    <rect class="llm" x="285" y="150" width="180" height="62" rx="11"/>
+    <text class="nlabel" x="375" y="178" text-anchor="middle">forecast_yields</text>
+    <text class="nsub" x="375" y="198" text-anchor="middle">LLM · gpt-4o</text>
+
+    <!-- diamond: score_risks -->
+    <polygon points="600,150 690,191 600,232 510,191" fill="#21252e" stroke="#39414f" stroke-width="1.5"/>
+    <text class="nlabel" x="600" y="186" text-anchor="middle">score_risks</text>
+    <text class="nsub" x="600" y="205" text-anchor="middle">4 gates</text>
+
+    <rect class="llm" x="745" y="150" width="180" height="62" rx="11"/>
+    <text class="nlabel" x="835" y="178" text-anchor="middle">propose_plan</text>
+    <text class="nsub" x="835" y="198" text-anchor="middle">LLM · gpt-4o</text>
+
+    <rect class="node" x="985" y="150" width="180" height="62" rx="11"/>
+    <text class="nlabel" x="1075" y="178" text-anchor="middle">simulate_plan</text>
+    <text class="nsub" x="1075" y="198" text-anchor="middle">dry-run swaps</text>
+  </g>
+
+  <!-- Row 2 -->
+  <g>
+    <rect class="node" x="985" y="350" width="180" height="62" rx="11"/>
+    <text class="nlabel" x="1075" y="378" text-anchor="middle">request_approval</text>
+    <text class="nsub" x="1075" y="398" text-anchor="middle">Telegram · human</text>
+
+    <rect class="node" x="745" y="350" width="180" height="62" rx="11" stroke="#65B3AE"/>
+    <text class="nlabel" x="835" y="378" text-anchor="middle">execute</text>
+    <text class="nsub" x="835" y="398" text-anchor="middle">record + swap</text>
+
+    <rect class="node" x="505" y="350" width="180" height="62" rx="11"/>
+    <text class="nlabel" x="595" y="378" text-anchor="middle">log_decision</text>
+    <text class="nsub" x="595" y="398" text-anchor="middle">Postgres / JSONL</text>
+
+    <rect class="node" x="265" y="350" width="180" height="62" rx="11"/>
+    <text class="nlabel" x="355" y="375" text-anchor="middle">post_to_</text>
+    <text class="nlabel" x="355" y="395" text-anchor="middle">reputation</text>
+  </g>
+
+  <!-- END / hold chips -->
+  <rect class="end" x="540" y="270" width="120" height="40" rx="10"/>
+  <text x="600" y="295" text-anchor="middle" fill="#d8b8cb" font-size="15" font-weight="600">END · hold</text>
+
+  <!-- Row1 edges -->
+  <path class="edge" d="M235,181 L283,181" marker-end="url(#arrow)"/>
+  <path class="edge" d="M465,181 L508,181" marker-end="url(#arrow)"/>
+  <path class="edge" d="M690,181 L743,181" marker-end="url(#arrow)"/>
+  <text class="elabel" x="715" y="173">pass</text>
+  <path class="edge" d="M925,181 L983,181" marker-end="url(#arrow)"/>
+  <!-- risk fail -->
+  <path class="edge" d="M600,232 L600,268" marker-end="url(#arrow)"/>
+  <text class="elabel" x="610" y="255">risk fail</text>
+
+  <!-- simulate -> request_approval (>=5%) -->
+  <path class="edge" d="M1075,212 L1075,348" marker-end="url(#arrow)"/>
+  <text class="elabel" x="1085" y="285">&#8805; 5% TVL</text>
+  <!-- simulate -> execute (<5% auto) -->
+  <path class="edgeTeal" d="M985,200 C900,250 900,300 836,348" marker-end="url(#arrowTeal)"/>
+  <text class="elabel" x="838" y="270" fill="#65B3AE">&lt; 5% · auto</text>
+  <!-- request_approval -> execute (approve) -->
+  <path class="edge" d="M985,381 L927,381" marker-end="url(#arrow)"/>
+  <text class="elabel" x="930" y="373">approve</text>
+  <!-- request_approval -> END (reject) -->
+  <path class="edge" d="M1075,412 L1075,452 L660,452 L620,310" marker-end="url(#arrow)"/>
+  <text class="elabel" x="1085" y="438">reject</text>
+  <!-- execute -> log_decision -> post_to_reputation -->
+  <path class="edge" d="M745,381 L687,381" marker-end="url(#arrow)"/>
+  <path class="edge" d="M505,381 L447,381" marker-end="url(#arrow)"/>
+
+  <!-- ===================== ON-CHAIN BAND ===================== -->
+  <rect class="band" x="30" y="540" width="860" height="300" stroke="#65B3AE"/>
+  <text class="blabel" x="52" y="568" fill="#65B3AE">On-chain · Mantle Sepolia (chainId 5003)</text>
+
+  <rect class="chip" x="70" y="600" width="220" height="92" rx="10"/>
+  <text class="nlabel" x="180" y="640" text-anchor="middle">PrimeYieldVault</text>
+  <text class="nsub" x="180" y="662" text-anchor="middle">ERC-4626 · mETH/USDY/USDe</text>
+
+  <rect class="chip" x="330" y="600" width="220" height="92" rx="10" stroke="#65B3AE"/>
+  <text class="nlabel" x="440" y="634" text-anchor="middle">DecisionLog</text>
+  <text class="nsub" x="440" y="656" text-anchor="middle">keccak256(rationale)</text>
+  <text class="nsub" x="440" y="674" text-anchor="middle">append-only, agent-only</text>
+
+  <rect class="chip" x="590" y="600" width="240" height="92" rx="10"/>
+  <text class="nlabel" x="710" y="640" text-anchor="middle">ERC-8004</text>
+  <text class="nsub" x="710" y="662" text-anchor="middle">Identity (#207) + Reputation</text>
+
+  <!-- execute -> on-chain -->
+  <path class="edgeTeal" d="M820,412 C700,470 560,500 470,598" marker-end="url(#arrowTeal)"/>
+  <text class="elabel" x="560" y="500" fill="#65B3AE">commit hash (pre-trade)</text>
+  <path class="edge" d="M855,412 C700,480 320,520 200,598" marker-end="url(#arrow)"/>
+  <text class="elabel" x="250" y="556">swaps</text>
+  <!-- reputation -> ERC8004 -->
+  <path class="edge" d="M340,412 C460,470 640,510 710,598" marker-end="url(#arrow)"/>
+  <text class="elabel" x="600" y="540">feedback</text>
+
+  <!-- ===================== AUDIT BAND ===================== -->
+  <rect class="band" x="930" y="540" width="340" height="300" stroke="#6E56CF"/>
+  <text class="blabel" x="952" y="568" fill="#6E56CF">Verify</text>
+
+  <rect class="chip" x="965" y="600" width="270" height="74" rx="10" stroke="#6E56CF"/>
+  <text class="nlabel" x="1100" y="634" text-anchor="middle">judge_replay.py</text>
+  <text class="nsub" x="1100" y="656" text-anchor="middle">re-reads chain, matches hashes</text>
+
+  <rect class="chip" x="965" y="708" width="270" height="74" rx="10"/>
+  <text class="nlabel" x="1100" y="742" text-anchor="middle" fill="#3fce8f">&#10003; AUDIT: VERIFIED</text>
+  <text class="nsub" x="1100" y="763" text-anchor="middle">tamper-evident provenance</text>
+
+  <!-- DecisionLog -> judge_replay (dashed, read) -->
+  <path class="edgePurple" d="M550,646 C760,646 820,640 963,638" marker-end="url(#arrowPurple)"/>
+  <text class="elabel" x="700" y="632" fill="#6E56CF">read events</text>
+  <path class="edge" d="M1100,674 L1100,706" marker-end="url(#arrow)"/>
+
+  <!-- Dashboard note -->
+  <text x="952" y="820" fill="#8b93a7" font-size="13">FastAPI + HTMX dashboard surfaces the live decision log</text>
+</svg>

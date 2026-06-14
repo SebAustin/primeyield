@@ -208,8 +208,9 @@ async def forecast_yields(state: AgentState) -> dict:
     """Forecast 7d/30d yields per asset via Claude."""
     import asyncio
 
-    from langchain_anthropic import ChatAnthropic
     from langchain_core.messages import HumanMessage, SystemMessage
+
+    from agent.llm import make_chat_llm
 
     snap = state.snapshot
     system = (
@@ -230,7 +231,7 @@ async def forecast_yields(state: AgentState) -> dict:
     )
 
     try:
-        llm = ChatAnthropic(model="claude-sonnet-4-5", max_tokens=512, temperature=0)
+        llm = make_chat_llm(max_tokens=512, temperature=0)
         resp = await llm.ainvoke([SystemMessage(content=system), HumanMessage(content=payload)])
         raw = resp.content.strip()
         # Strip any markdown fences if present.
@@ -297,10 +298,12 @@ async def score_risks(state: AgentState) -> dict:
         else:
             yield_scenarios[asset] = [Decimal("0.0001")] * 30
 
-    # Fetch current USDY price for oracle gate.
+    # Fetch current USDY price for oracle gate. USDY is yield-bearing, so its
+    # NAV reference is principal + accrued annual yield (~1.05), matching the
+    # price source — not 1 + daily yield, which would be a ~1.0001 mismatch.
     w3 = get_w3()
     usdy_price = await ondo.usdy_price_usd(w3)
-    reference_price = snap.usdy_yield / Decimal("365") + Decimal("1")  # approx
+    reference_price = Decimal("1") + snap.usdy_yield
 
     eng = RiskEngine()
     report = eng.evaluate(
@@ -324,10 +327,10 @@ async def score_risks(state: AgentState) -> dict:
 # ---------------------------------------------------------------------------
 @traceable(name="propose_plan")
 async def propose_plan(state: AgentState) -> dict:
-    """Ask Claude for a RebalancePlan; validate concentration before accepting."""
-    from langchain_anthropic import ChatAnthropic
+    """Ask the LLM for a RebalancePlan; validate concentration before accepting."""
     from langchain_core.messages import HumanMessage, SystemMessage
 
+    from agent.llm import make_chat_llm
     from agent.risk import RiskEngine
 
     snap = state.snapshot
@@ -343,7 +346,8 @@ async def propose_plan(state: AgentState) -> dict:
         "You are a DeFi yield rotation agent. Produce a rebalance plan as valid JSON ONLY.\n"
         "Constraints:\n"
         "  - Maximum 3 swaps per cycle (gas budget)\n"
-        "  - No single asset may exceed 60% of TVL\n"
+        "  - After rebalancing, NO asset may exceed 55% of TVL. The hard cap is "
+        "60%, so keep a safety margin and target 55% or below.\n"
         "  - If any swap involves USDY as destination, add a note in rationale about blocklist preflight\n"
         "  - Minimize gas; avoid swaps smaller than 5% of TVL\n"
         "JSON format:\n"
@@ -367,7 +371,7 @@ async def propose_plan(state: AgentState) -> dict:
 
     for attempt in range(3):
         try:
-            llm = ChatAnthropic(model="claude-sonnet-4-5", max_tokens=1024, temperature=0.1)
+            llm = make_chat_llm(max_tokens=1024, temperature=0.1)
             resp = await llm.ainvoke([SystemMessage(content=system), HumanMessage(content=payload)])
             raw = resp.content.strip()
             if raw.startswith("```"):
@@ -400,8 +404,18 @@ async def propose_plan(state: AgentState) -> dict:
                 )
                 break
             else:
-                log.warning("propose_plan attempt %d: concentration check failed, retrying", attempt + 1)
-                payload += "\n\nPrevious proposal failed concentration check (>60% in one asset). Diversify more."
+                total = sum(weights.values()) or Decimal("1")
+                worst_asset, worst_w = max(weights.items(), key=lambda kv: kv[1])
+                worst_pct = float(worst_w / total) * 100
+                log.warning(
+                    "propose_plan attempt %d: concentration check failed (%s at %.1f%%), retrying",
+                    attempt + 1, worst_asset, worst_pct,
+                )
+                payload += (
+                    f"\n\nYour previous proposal left {worst_asset} at {worst_pct:.1f}% of TVL, "
+                    "which exceeds the 55% target. Propose smaller swaps so EVERY asset ends "
+                    "at 55% or below."
+                )
         except Exception as exc:  # noqa: BLE001
             log.warning("propose_plan attempt %d failed: %s", attempt + 1, exc)
 

@@ -44,19 +44,36 @@ def _send(w3, acct, tx) -> dict:
     return w3.eth.wait_for_transaction_receipt(tx_hash)
 
 
-def _tx_opts(w3, acct) -> dict:
+class _Nonce:
+    """Local nonce tracker.
+
+    Mantle's sequencer can lag the latest-block transaction count between rapid
+    sequential sends, causing 'nonce too low'. We read the pending nonce once
+    and increment locally for every subsequent tx.
+    """
+
+    def __init__(self, w3, acct):
+        self.value = w3.eth.get_transaction_count(acct.address, "pending")
+
+    def next(self) -> int:
+        n = self.value
+        self.value += 1
+        return n
+
+
+def _tx_opts(w3, acct, nonce: int) -> dict:
     """Common legacy-gas tx options (Mantle uses legacy gas pricing)."""
     return {
         "from": acct.address,
-        "nonce": w3.eth.get_transaction_count(acct.address),
+        "nonce": nonce,
         "gasPrice": w3.eth.gas_price,
     }
 
 
-def deploy(w3, acct, sol_file: str, name: str, *args) -> tuple[str, list]:
+def deploy(w3, acct, nonce: _Nonce, sol_file: str, name: str, *args) -> tuple[str, list]:
     abi, bytecode = load_artifact(sol_file, name)
     contract = w3.eth.contract(abi=abi, bytecode=bytecode)
-    tx = contract.constructor(*args).build_transaction(_tx_opts(w3, acct))
+    tx = contract.constructor(*args).build_transaction(_tx_opts(w3, acct, nonce.next()))
     receipt = _send(w3, acct, tx)
     addr = w3.to_checksum_address(receipt["contractAddress"])
     print(f"  deployed {name} -> {addr}")
@@ -78,28 +95,33 @@ def main() -> None:
         else deployer
     )
 
-    print(f"deploying from {deployer} on chainId {w3.eth.chain_id}")
+    # Capture the block before deploying so judge_replay can scan a bounded
+    # range (public RPCs reject unbounded eth_getLogs from block 0).
+    start_block = w3.eth.block_number
+    nonce = _Nonce(w3, acct)
+    print(f"deploying from {deployer} on chainId {w3.eth.chain_id} (block {start_block})")
 
-    meth, meth_abi = deploy(w3, acct, "MockERC20.sol", "MockERC20", "Mock mETH", "mETH", 18)
-    usdy, _ = deploy(w3, acct, "MockERC20.sol", "MockERC20", "Mock USDY", "USDY", 18)
-    usde, _ = deploy(w3, acct, "MockERC20.sol", "MockERC20", "Mock USDe", "USDe", 18)
+    meth, meth_abi = deploy(w3, acct, nonce, "MockERC20.sol", "MockERC20", "Mock mETH", "mETH", 18)
+    usdy, _ = deploy(w3, acct, nonce, "MockERC20.sol", "MockERC20", "Mock USDY", "USDY", 18)
+    usde, _ = deploy(w3, acct, nonce, "MockERC20.sol", "MockERC20", "Mock USDe", "USDe", 18)
 
     vault, _ = deploy(
-        w3, acct, "PrimeYieldVault.sol", "PrimeYieldVault",
+        w3, acct, nonce, "PrimeYieldVault.sol", "PrimeYieldVault",
         meth, usdy, usde, agent_addr, guardian_addr, deployer,
     )
-    decision_log, _ = deploy(w3, acct, "DecisionLog.sol", "DecisionLog", agent_addr)
+    decision_log, _ = deploy(w3, acct, nonce, "DecisionLog.sol", "DecisionLog", agent_addr)
 
     # Fund the vault by minting mock tokens to it.
     print("funding vault...")
     for token_addr, amount in ((meth, FUND_METH), (usdy, FUND_USDY), (usde, FUND_USDE)):
         token = w3.eth.contract(address=token_addr, abi=meth_abi)
-        tx = token.functions.mint(vault, amount).build_transaction(_tx_opts(w3, acct))
+        tx = token.functions.mint(vault, amount).build_transaction(_tx_opts(w3, acct, nonce.next()))
         _send(w3, acct, tx)
     print(f"  funded vault {vault} with mETH/USDY/USDe mocks")
 
     deployments = {
         "chainId": w3.eth.chain_id,
+        "startBlock": start_block,
         "deployer": deployer,
         "agent": agent_addr,
         "guardian": guardian_addr,

@@ -82,6 +82,8 @@ class Settings(BaseModel):
     guardian_address: str = os.getenv("GUARDIAN_ADDRESS", "")
     pinata_jwt: str = os.getenv("PINATA_JWT", "")
     anthropic_api_key: str = os.getenv("ANTHROPIC_API_KEY", "")
+    openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
+    llm_provider: str = os.getenv("LLM_PROVIDER", "")
     telegram_bot_token: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
     telegram_chat_id: str = os.getenv("TELEGRAM_CHAT_ID", "")
     langsmith_project: str = os.getenv("LANGSMITH_PROJECT", "primeyield")

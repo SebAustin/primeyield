@@ -18,7 +18,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import portfolio, telegram
+from api.routes import dashboard, portfolio, telegram
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +37,7 @@ app.add_middleware(
 
 app.include_router(telegram.router)
 app.include_router(portfolio.router)
+app.include_router(dashboard.router)
 
 
 @app.get("/health")

@@ -126,7 +126,7 @@ class TestForecastYieldsNode:
     async def test_uses_fallback_on_llm_failure(self):
         from agent.graph import forecast_yields
 
-        with patch("langchain_anthropic.ChatAnthropic", side_effect=Exception("no API key")):
+        with patch("agent.llm.make_chat_llm", side_effect=Exception("no API key")):
             state = _state()
             result = await forecast_yields(state)
 
@@ -146,7 +146,7 @@ class TestForecastYieldsNode:
         mock_llm = AsyncMock()
         mock_llm.ainvoke = AsyncMock(return_value=mock_resp)
 
-        with patch("langchain_anthropic.ChatAnthropic", return_value=mock_llm):
+        with patch("agent.llm.make_chat_llm", return_value=mock_llm):
             state = _state()
             result = await forecast_yields(state)
 

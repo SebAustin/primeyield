@@ -38,3 +38,7 @@ state/*.json
 
 # Editor / IDE assistant config
 .cursor/
+
+# Demo working files (keep architecture.png + PrimeYield-demo.mp4 tracked)
+demo/assets/
+demo/voiceover/

@@ -33,4 +33,4 @@
 - **Mock assets:** mETH `0x042Eaf710e7f2Ee48fAf2699E38d8C67eeD77632` · USDY `0x264EFA8062ecC370AA5Ec837f56D683925cdc56A` · USDe `0xC4126e62f1F62fC76Ff3EB81D1b5407B4580BBCE`
 - **Example AI decision on-chain** (USDY→USDe, USDY→mETH): [`0x463b020f…8ac5f0`](https://sepolia.mantlescan.xyz/tx/0x463b020fdb6ebd1a57c5fa4635f8c18f555dcf2378d0718efe90335bee8ac5f0)
 - **Audit verdict:** `judge_replay` → **VERIFIED — on-chain=3, matched=3, tamper=0** (see `docs/AUDIT.md`)
-- **GitHub:** _(fill)_ · **Demo video:** _(fill)_ · **X thread:** _(fill)_
+- **GitHub:** https://github.com/SebAustin/primeyield · **Demo video:** _(fill)_ · **X thread:** _(fill)_

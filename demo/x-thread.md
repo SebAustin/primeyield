@@ -56,7 +56,7 @@ PrimeYield = agent speed, smart-contract verifiability.
 The trust layer for putting RWA capital under agent control.
 
 🎥 Demo: [video]
-💻 Code: [github]
+💻 Code: github.com/SebAustin/primeyield
 Built on @0xMantle for the Turing Test Hackathon.
 
 #Mantle #RWA #AIagents

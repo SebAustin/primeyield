@@ -26,4 +26,4 @@
 
 **What's next.** Wire live Agni / Merchant Moe routers for real swap execution; enable cross-agent ERC-8004 reputation feedback; add a vault depositor SDK; pilot with a real RWA treasury on Mantle mainnet.
 
-**Links.** GitHub: https://github.com/SebAustin/primeyield · Demo video: [YouTube] · Dashboard: [screenshot] · Audit: `docs/AUDIT.md`
+**Links.** GitHub: https://github.com/SebAustin/primeyield · Demo video: https://youtu.be/2vgd4oE38mU · Dashboard: [screenshot] · Audit: `docs/AUDIT.md`
